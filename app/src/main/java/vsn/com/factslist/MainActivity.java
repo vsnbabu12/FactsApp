@@ -4,12 +4,27 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import vsn.com.factslist.adapters.FactListAdapter;
+import vsn.com.factslist.models.FactsResponse;
+import vsn.com.factslist.services.FactListInterface;
+import vsn.com.factslist.services.FactListService;
 
 public class MainActivity extends AppCompatActivity {
+
+    private final static String API_KEY = "";
+    private RecyclerView factsListView;
+    FactListAdapter factListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +39,25 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+            }
+        });
+
+
+        factsListView = findViewById(R.id.factsListView);
+
+        FactListInterface listService = FactListService.getClient().create(FactListInterface.class);
+
+        Call<FactsResponse> call = listService.getAllFacts(API_KEY);
+        call.enqueue(new Callback<FactsResponse>() {
+            @Override
+            public void onResponse(Call<FactsResponse> call, Response<FactsResponse> response) {
+                displayList(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<FactsResponse> call, Throwable t) {
+                Toast.makeText(MainActivity.this,""+t.getMessage(),Toast.LENGTH_SHORT).show();
+                System.out.println("Error --> "+t.getMessage());
             }
         });
     }
@@ -48,5 +82,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void displayList(FactsResponse response){
+        Toast.makeText(this,"getting resposne "+response.getTitle(),Toast.LENGTH_LONG).show();
+        factListAdapter = new FactListAdapter(response.getRows(),this);
+        factsListView.setAdapter(factListAdapter);
+
+        final LinearLayoutManager layoutManager
+                = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        factsListView.setLayoutManager(layoutManager);
     }
 }
