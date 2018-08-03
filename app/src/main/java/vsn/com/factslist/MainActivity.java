@@ -3,6 +3,7 @@ package vsn.com.factslist;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import retrofit2.Call;
@@ -25,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
     private final static String API_KEY = "";
     private RecyclerView factsListView;
     FactListAdapter factListAdapter;
+    ActionBar actionBar;
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +46,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        actionBar = getSupportActionBar();
+
 
         factsListView = findViewById(R.id.factsListView);
+        progressBar =findViewById(R.id.progressBar);
 
         FactListInterface listService = FactListService.getClient().create(FactListInterface.class);
-
+        showProgress();
         Call<FactsResponse> call = listService.getAllFacts(API_KEY);
         call.enqueue(new Callback<FactsResponse>() {
             @Override
@@ -85,12 +92,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void displayList(FactsResponse response){
-        Toast.makeText(this,"getting resposne "+response.getTitle(),Toast.LENGTH_LONG).show();
+        //Toast.makeText(this,"getting resposne "+response.getTitle(),Toast.LENGTH_LONG).show();
+        hideProgress();
+        actionBar.setTitle(response.getTitle());
         factListAdapter = new FactListAdapter(response.getRows(),this);
         factsListView.setAdapter(factListAdapter);
 
         final LinearLayoutManager layoutManager
                 = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         factsListView.setLayoutManager(layoutManager);
+    }
+
+    public void showProgress(){
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    public void hideProgress(){
+        progressBar.setVisibility(View.GONE);
     }
 }
