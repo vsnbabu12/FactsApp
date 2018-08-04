@@ -1,6 +1,9 @@
 package vsn.com.factslist;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
@@ -12,15 +15,11 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import vsn.com.factslist.adapters.FactListAdapter;
+import vsn.com.factslist.fragments.FactsFragment;
 import vsn.com.factslist.models.FactsResponse;
-import vsn.com.factslist.services.FactListInterface;
-import vsn.com.factslist.services.FactListService;
+import vsn.com.factslist.models.MyViewModel;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
     FactListAdapter factListAdapter;
     ActionBar actionBar;
     ProgressBar progressBar;
+    FactsFragment factsFragment;
+    MyViewModel model;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +42,9 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+
+                refreshList();
+
             }
         });
 
@@ -50,21 +52,17 @@ public class MainActivity extends AppCompatActivity {
 
 
         factsListView = findViewById(R.id.factsListView);
-        progressBar =findViewById(R.id.progressBar);
+        progressBar =findViewById(R.id.progressbar);
+        progressBar.setVisibility(View.VISIBLE);
+        factsFragment = (FactsFragment) getFragmentManager().findFragmentById(R.id.factFragment);
 
-        FactListInterface listService = FactListService.getClient().create(FactListInterface.class);
-        showProgress();
-        Call<FactsResponse> call = listService.getAllFacts(API_KEY);
-        call.enqueue(new Callback<FactsResponse>() {
-            @Override
-            public void onResponse(Call<FactsResponse> call, Response<FactsResponse> response) {
-                displayList(response.body());
-            }
+        model = ViewModelProviders.of(this).get(MyViewModel.class);
 
-            @Override
-            public void onFailure(Call<FactsResponse> call, Throwable t) {
-                Toast.makeText(MainActivity.this,""+t.getMessage(),Toast.LENGTH_SHORT).show();
-                System.out.println("Error --> "+t.getMessage());
+        model.getUsers().observe(this, new Observer<FactsResponse>() {
+            public void onChanged(@Nullable FactsResponse response) {
+                actionBar.setTitle(response.getTitle());
+                factsFragment.displayList(response);
+                progressBar.setVisibility(View.GONE);
             }
         });
     }
@@ -84,30 +82,15 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_settings) {model.getLatestList();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    public void displayList(FactsResponse response){
-        //Toast.makeText(this,"getting resposne "+response.getTitle(),Toast.LENGTH_LONG).show();
-        hideProgress();
-        actionBar.setTitle(response.getTitle());
-        factListAdapter = new FactListAdapter(response.getRows(),this);
-        factsListView.setAdapter(factListAdapter);
-
-        final LinearLayoutManager layoutManager
-                = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        factsListView.setLayoutManager(layoutManager);
+    public void refreshList(){
+        model.getLatestList();
     }
 
-    public void showProgress(){
-        progressBar.setVisibility(View.VISIBLE);
-    }
-
-    public void hideProgress(){
-        progressBar.setVisibility(View.GONE);
-    }
 }

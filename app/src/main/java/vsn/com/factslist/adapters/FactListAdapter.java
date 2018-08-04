@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.List;
 
@@ -76,7 +77,9 @@ public class FactListAdapter extends RecyclerView.Adapter<FactListAdapter.FactLi
         if(imageUrl != null && imageUrl.length() > 0){
             imageUrl = imageUrl;
             // load images here with TextView in fact_item.xml
-            Glide.with(context).load(imageUrl).into(holder.factImage);
+            Glide.with(context).load(imageUrl)
+                    .apply(new RequestOptions().error(R.drawable.facts))
+                    .into(holder.factImage);
         }
 
         holder.factImage.setOnClickListener(new View.OnClickListener() {
