@@ -12,17 +12,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Hello World!"
-        android:paddingStart="10dp"
+        android:paddingStart="@dimen/ten_dp"
         android:gravity="left"
-        android:paddingLeft="10dp"
+        android:paddingLeft="@dimen/ten_dp"
         android:textAllCaps="true"
-        android:textSize="16sp"/>
+        android:textColor="@color/titleColor"
+        android:textSize="@dimen/sixtenn_sp"/>
 
     <LinearLayout android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:weightSum="3"
-        android:padding="10dp">
+        android:padding="@dimen/ten_dp">
 
         <TextView
             android:id="@+id/factText"
@@ -30,6 +31,7 @@
             android:layout_weight="2"
             android:layout_height="wrap_content"
             android:text="Hello World!"
+
             android:gravity="left"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
